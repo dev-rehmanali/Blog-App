@@ -35,7 +35,6 @@ const postComment = (req, res, next) => {
         postId
       },
       function (err, comment) {
-        // console.log(err);
         if (err) return res.status(500).send("There was a problem registering the user.")
         // creating a token
         var token = jwt.sign({ id: comment._id }, config.secret, {
@@ -64,7 +63,6 @@ const getCommentsByPost = (req, res, next) => {
     const postId = req.body.postId;
     try {
       Comments.find({postId: postId}).then(comment =>{
-        console.log(comment); 
         res.status(200).send(comment);
         })
       } catch (error) {

@@ -14,7 +14,7 @@ router.get('/getPostsByUser', verifyToken, usersController.getPostsByUser);
 
 router.post('/signup', verifyToken, usersController.signup);
 
-router.post('/login', verifyToken,  usersController.login);
+router.post('/login',  usersController.login);
 
 router.get('/logout', usersController.logout);
 

@@ -3,7 +3,6 @@ const router = express.Router();
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const Employee = require("../models/userModel");
-const verifyToken = require('../middleware/VerificationMiddleware');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
