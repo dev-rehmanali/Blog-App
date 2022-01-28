@@ -6,9 +6,6 @@ const commentsSchema = new mongoose.Schema({
       content: {
         type: String
       },
-      commentedBy: {
-          type: String
-      },
       datePosted: {
           type: Date    
       },

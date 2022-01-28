@@ -6,19 +6,21 @@ const upload = require("../middleware/upload");
 
 const router = express.Router();
 
+const userValidator = require('../middleware/user-validator');
+
 const verifyToken = require('../middleware/VerificationMiddleware');
 
 router.get('/', usersController.getUsers);
 
 router.get('/getPostsByUser', verifyToken, usersController.getPostsByUser);
 
-router.post('/signup', verifyToken, usersController.signup);
+router.post('/signup', userValidator.signUpValidator, usersController.signup);
 
-router.post('/login',  usersController.login);
+router.post('/login', userValidator.loginValidator , usersController.login);
 
 router.get('/logout', usersController.logout);
 
-router.post('/reset', usersController.reset);
+router.post('/reset', userValidator.resetValidator, usersController.reset);
 
 router.get('/currentuser',verifyToken , usersController.currentUser);
 

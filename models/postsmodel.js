@@ -9,12 +9,6 @@ const postsSchema = new mongoose.Schema({
     datePosted: {
         type: Date
     },
-    commentsCount: {
-        type: Number
-    },
-    likesCount: {
-        type: Number
-    },
     userId: {
         type: ObjectId,
         ref: "PostingUser"

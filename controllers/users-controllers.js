@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
 
+const { validationResult } = require('express-validator');
+
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
@@ -24,14 +26,14 @@ const getUsers = (req, res, next) => {
 
 const currentUser = (req, res, next) => {
 
-    Employee.findById(req.userId,
-      { _id: 1 },
-      function (err, user) {
-        if (err) return res.status(500).send("There was a problem finding the user.");
-        if (!user) return res.status(404).send("No user found.");
+  Employee.findById(req.userId,
+    { _id: 1 },
+    function (err, user) {
+      if (err) return res.status(500).send("There was a problem finding the user.");
+      if (!user) return res.status(404).send("No user found.");
 
-        res.status(200).send(user);
-      });
+      res.status(200).send(user);
+    });
 };
 
 const getPostsByUser = (req, res, next) => {
@@ -40,7 +42,7 @@ const getPostsByUser = (req, res, next) => {
 
   console.log(userId);
   try {
-    Employee.find({_id: userId}).populate({
+    Employee.find({ _id: userId }).populate({
       path: "PostsByUser"
     }).then(user => {
       console.log(user);
@@ -54,49 +56,73 @@ const getPostsByUser = (req, res, next) => {
 
 const signup = (req, res, next) => {
 
-  const { name, email, password } = req.body;
+  try {
+    const errors = validationResult(req); // Finds the validation errors in this request 
 
-  var hashedPassword = bcrypt.hashSync(password, 8);
-  const hasUser = Employee.findOne({ email: email }).then(users => {
-
-    if (users) {
-      res.status(422).send('Could not create user, email already exists.');
-    } else {
-      Employee.create({
-        name: name,
-        email: email,
-        password: hashedPassword
-      },
-        function (err, user) {
-          if (err) return res.status(500).send("There was a problem registering the user.")
-          // creating a token
-          var token = jwt.sign({ id: user._id }, config.secret, {
-            expiresIn: 86400 // expires in 24 hours
-          });
-          res.status(200).send({ auth: true, token: token });
-        });
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
     }
 
-  });
+    const { name, email, password } = req.body;
+
+    var hashedPassword = bcrypt.hashSync(password, 8);
+    const hasUser = Employee.findOne({ email: email }).then(users => {
+
+      if (users) {
+        res.status(422).send('Could not create user, email already exists.');
+      } else {
+        Employee.create({
+          name: name,
+          email: email,
+          password: hashedPassword
+        },
+          function (err, user) {
+            if (err) return res.status(500).send("There was a problem registering the user.")
+            // creating a token
+            var token = jwt.sign({ id: user._id }, config.secret, {
+              expiresIn: 86400 // expires in 24 hours
+            });
+            res.status(200).send({ auth: true, token: token });
+          });
+      }
+
+    });
+
+
+  } catch (err) {
+    return next(err)
+  }
 
 };
 
 const login = (req, res, next) => {
 
-  Employee.findOne({ email: req.body.email }, function (err, user) {
-    if (err) return res.status(500).send('Error on the server.');
-    if (!user) return res.status(404).send('No user found.');
+  try {
+    const errors = validationResult(req); // Finds the validation errors in this request
 
-    var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
-    if (!passwordIsValid) return res.status(401).send({ message: "Wrong Password", auth: false, token: null });
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+    Employee.findOne({ email: req.body.email }, function (err, user) {
+      if (err) return res.status(500).send('Error on the server.');
+      if (!user) return res.status(404).send('No user found.');
 
-    var token = jwt.sign({ id: user._id }, config.secret, {
-      expiresIn: 86400 // expires in 24 hours
+      var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+      if (!passwordIsValid) return res.status(401).send({ message: "Wrong Password", auth: false, token: null });
+
+      var token = jwt.sign({ id: user._id }, config.secret, {
+        expiresIn: 86400 // expires in 24 hours
+      });
+
+      res.status(200).send({ auth: true, token: token });
     });
 
-    res.status(200).send({ auth: true, token: token });
-  });
 
+  } catch (err) {
+    return next(err)
+  }
 };
 
 const logout = (req, res, next) => {
@@ -105,12 +131,24 @@ const logout = (req, res, next) => {
 
 const reset = (req, res, next) => {
 
-  Employee.findOne({ email: req.body.email }, function (err, user) {
-    if (err) return res.status(500).send('Error on the server.');
-    if (!user) return res.status(404).send('No user with this email exists.');
+  try {
+    const errors = validationResult(req);
 
-    res.status(200).send({ message: "Password Reset email Sent", auth: true, token: token });
-  });
+    if(!errors.isEmpty()){
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+
+    Employee.findOne({ email: req.body.email }, function (err, user) {
+      if (err) return res.status(500).send('Error on the server.');
+      if (!user) return res.status(404).send('No user with this email exists.');
+  
+      res.status(200).send({ message: "Password Reset email Sent", auth: true, token: token });
+    });
+
+  } catch (error) {
+    return next(error);    
+  }
 
 };
 

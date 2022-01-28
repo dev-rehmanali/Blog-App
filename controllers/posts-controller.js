@@ -3,6 +3,8 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const Posts = require("../models/postsmodel");
 
+const { validationResult } = require('express-validator');
+
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
@@ -21,21 +23,33 @@ const getAllPosts = (req, res, next) => {
 
 const addPost = (req, res, next) => {
 
-  const { userId, userName, contentPosted, commentsCount, likesCount } = req.body;
+  try {
+    const errors = validationResult(req);
 
-  Posts.create({
-    userId,
-    userName,
-    contentPosted,
-    datePosted: Date.now(),
-    commentsCount,
-    likesCount
-  },
-    function (err, post) {
-      console.log(err);
-      if (err) return res.status(500).send("There was a problem registering the user.");
-      res.send(post);
-    });
+    if(!errors.isEmpty()){
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+
+    const { contentPosted, userId } = req.body;
+
+    Posts.create({
+      contentPosted,
+      datePosted: Date.now(),
+      userId
+    },
+      function (err, post) {
+        console.log(err);
+        if (err) return res.status(500).send("There was a problem adding post.");
+        res.send(post);
+      });
+
+  } catch (error) {
+      return next(error);    
+  }
+
+
+
 };
 
 const getCountCommentsOfPost = (req, res, next) => {

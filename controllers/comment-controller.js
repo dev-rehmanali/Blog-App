@@ -3,6 +3,8 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const Comments = require("../models/commentsModel");
 
+const { validationResult } = require('express-validator');
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
@@ -25,23 +27,30 @@ const getAllComments = (req, res, next) => {
 
 const postComment = (req, res, next) => {
   
-    const {content, commentedBy, userId, postId} = req.body;
+  try {
+    const errors = validationResult(req);
+
+    if(!errors.isEmpty()){
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+
+    const {content, userId, postId} = req.body;
 
       Comments.create({
         content,
-        commentedBy,
         datePosted: Date.now(), 
         userId,
         postId
       },
       function (err, comment) {
         if (err) return res.status(500).send("There was a problem registering the user.")
-        // creating a token
-        var token = jwt.sign({ id: comment._id }, config.secret, {
-          expiresIn: 86400 // expires in 24 hours
-        });
-        res.status(200).send({ auth: true, token: token });
-      }); 
+        res.status(200).send(comment);
+      });
+    
+  } catch (error) {
+      return next(error);    
+  } 
 
 };
 
