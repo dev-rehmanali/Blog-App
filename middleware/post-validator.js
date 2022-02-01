@@ -2,11 +2,19 @@ const { check } = require('express-validator')
 
 exports.addPostValidator = [
 
-    check("contentPosted")
+    check("title")
+        .trim()
+        .notEmpty()
+        .withMessage("Content is required!"),
+    check("bodyContent")
+        .trim()
+        .notEmpty()
+        .withMessage("Body content is required!"),
+    check("author")
         .trim()
         .toLowerCase()
         .notEmpty()
-        .withMessage("Content is required!"),
+        .withMessage("author is required!"),
 ];
 
 

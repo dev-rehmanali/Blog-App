@@ -19,7 +19,7 @@ const getUsers = (req, res, next) => {
       res.send(user);
     })
   } catch (error) {
-    console.log("Cannot get Users");
+    res.status(404).send({message: "Cannot get Users"});
   }
 
 };
@@ -30,7 +30,7 @@ const currentUser = (req, res, next) => {
     { _id: 1 },
     function (err, user) {
       if (err) return res.status(500).send("There was a problem finding the user.");
-      if (!user) return res.status(404).send("No user found.");
+      if (!user) return res.status(404).send({message: "Could not find user", user});
 
       res.status(200).send(user);
     });
@@ -107,7 +107,7 @@ const login = (req, res, next) => {
     }
     Employee.findOne({ email: req.body.email }, function (err, user) {
       if (err) return res.status(500).send('Error on the server.');
-      if (!user) return res.status(404).send('No user found.');
+      if (!user) return res.status(404).send({message: "Could not find user", user});
 
       var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
       if (!passwordIsValid) return res.status(401).send({ message: "Wrong Password", auth: false, token: null });
@@ -141,7 +141,7 @@ const reset = (req, res, next) => {
 
     Employee.findOne({ email: req.body.email }, function (err, user) {
       if (err) return res.status(500).send('Error on the server.');
-      if (!user) return res.status(404).send('No user with this email exists.');
+      if (!user) return res.status(404).send({message: "Could not find user", user});
   
       res.status(200).send({ message: "Password Reset email Sent", auth: true, token: token });
     });

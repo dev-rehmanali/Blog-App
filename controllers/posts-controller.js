@@ -31,10 +31,12 @@ const addPost = (req, res, next) => {
       return;
     }
 
-    const { contentPosted, userId } = req.body;
+    const { title, bodyContent, author, userId } = req.body;
 
     Posts.create({
-      contentPosted,
+      title,
+      bodyContent,
+      author,
       datePosted: Date.now(),
       userId
     },

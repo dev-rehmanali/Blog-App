@@ -3,16 +3,22 @@ const opts = { timestamps: true, toJSON: { virtuals: true }, toObject: { virtual
 const ObjectId = mongoose.Schema.Types.ObjectId;
 const postsSchema = new mongoose.Schema({
 
-    contentPosted: {
+    title: {
+        type: String
+    },
+    bodyContent: {
         type: String
     },
     datePosted: {
         type: Date
     },
+    author: {
+        type: String
+    },
     userId: {
         type: ObjectId,
         ref: "PostingUser"
-      },
+    }
 
 },opts);
 
